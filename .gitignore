@@ -1,2 +1,4 @@
 *~
 *.o
+ldserv
+vcf2gt
