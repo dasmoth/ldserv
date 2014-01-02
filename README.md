@@ -16,4 +16,4 @@ environment variable to locate the (Tabix-indexed) genotypes.  If using Apache, 
 this using something like:
 
         SetEnv GENOTYPE_FILE /path/to/genotypes.gt.gz
-        ScriptAlias /cgi-bin/ /path/to/ldserv
+        ScriptAlias /cgi-bin/ /path/to/directory-containing-ldserv
