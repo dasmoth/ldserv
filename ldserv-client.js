@@ -89,6 +89,8 @@ TDSnpFeatureSource.prototype.fetch = function(chr, min, max, scale, types, pool,
 
             if (j.color)
                 f.itemRgb = j.color;
+            else
+                f.itemRgb = null;
 		    
 		    features.push(f);
 		}
