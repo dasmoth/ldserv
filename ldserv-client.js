@@ -58,7 +58,9 @@ TDSnpFeatureSource.prototype.fetch = function(chr, min, max, scale, types, pool,
         for (var ri = 0; ri < this.refs.length; ++ri)
 	       url += '&ref=' + this.refs[ri];
     }
-    url += '&color=true';
+
+    if (this.refs.length > 1)
+        url += '&color=true';
 
     var req = new XMLHttpRequest();
     req.onreadystatechange = function() {
@@ -107,4 +109,34 @@ TDSnpFeatureSource.prototype.fetch = function(chr, min, max, scale, types, pool,
 dalliance_registerSourceAdapterFactory('tdsnp', function(source) {
     return {features: new TDSnpFeatureSource(source)};
 });
+
+
+function getSnpSource(source) {
+  if (source.setRef) {
+    return source;
+  } else if (source.source) {
+    return getSnpSource(source.source);
+  } else if (source.sources) {
+    for (var si = 0; si < source.sources.length; ++si) {
+      var ss = getSnpSource(source.sources[si]);
+      if (ss)
+        return ss;
+    }
+  }
+}
+
+function ldserv_controllerPlugin(f, info) {
+  var ss = getSnpSource(info.tier.featureSource);
+  if (ss && f.id) {
+    var button = makeElement('input', '', {type: 'button', value: 'Make ref.'});
+    button.addEventListener('click', function(ev) {
+      ss.setRef(f.id);
+    }, false);
+    var b2 = makeElement('input', '', {type: 'button', value: 'Add ref.'});
+    b2.addEventListener('click', function(ev) {
+      ss.addRef(f.id);
+    }, false);
+    info.add('LD Calculation', makeElement("span", [button, b2]));
+  }
+}
 
