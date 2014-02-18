@@ -1,6 +1,7 @@
 function TDSnpFeatureSource(source) {
     this.source = source;
     this.uri = source.uri;
+    this.refs = [];
 
     this.activityListeners = [];
     this.busy = 0;
@@ -9,7 +10,12 @@ function TDSnpFeatureSource(source) {
 }
 
 TDSnpFeatureSource.prototype.setRef = function(ref) {
-    this.ref = ref;
+    this.refs = [ref];
+    this.notifyChange();
+}
+
+TDSnpFeatureSource.prototype.addRef = function(ref) {
+    this.refs.push(ref);
     this.notifyChange();
 }
 
@@ -48,9 +54,11 @@ TDSnpFeatureSource.prototype.getScales = function() {
 TDSnpFeatureSource.prototype.fetch = function(chr, min, max, scale, types, pool, callback) {
     var thisB = this;
     url = this.uri + '?chr=' + chr + '&min=' + min + '&max=' + max;
-    if (this.ref) {
-	url += '&ref=' + this.ref;
+    if (this.refs) {
+        for (var ri = 0; ri < this.refs.length; ++ri)
+	       url += '&ref=' + this.refs[ri];
     }
+    url += '&color=true';
 
     var req = new XMLHttpRequest();
     req.onreadystatechange = function() {
@@ -75,7 +83,10 @@ TDSnpFeatureSource.prototype.fetch = function(chr, min, max, scale, types, pool,
             else
                 f.type = 'snp';
 
-		    f.score = j.score
+		    f.score = j.score || j.score2;
+
+            if (j.color)
+                f.itemRgb = j.color;
 		    
 		    features.push(f);
 		}

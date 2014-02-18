@@ -2,6 +2,7 @@
 #include <cmath>
 #include <string>
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include <sstream>
 
@@ -75,7 +76,8 @@ int main() {
     string chr("");
     int min = -1;
     int max = -1;
-    string ref("");
+    vector<string> refs;
+    bool color = false;
 
     vector<string> v = split_on(query, '&');
     for (auto i = begin(v); i != end(v); ++i) {
@@ -95,7 +97,9 @@ int main() {
         } else if (key == "max") {
             max = stoi(value);
         } else if (key == "ref") {
-            ref = value;
+            refs.push_back(value);
+        } else if (key == "color") {
+            color = true;
         } else {
             cerr << "Unknown query parameter " << key << endl;
         }
@@ -124,7 +128,7 @@ int main() {
     string region = regionstr.str();
 
     vector<var> vars;
-    var refVar;
+    vector<var> refVars(refs.size());
 
     if (tabix->setRegion(region)) {
         string line;
@@ -136,8 +140,10 @@ int main() {
             v.pos = stoi(toks[1]);
             v.genotypes = toks[3];
             vars.push_back(v);
-            if (v.id == ref) {
-                refVar = v;
+
+            auto x = find(begin(refs), end(refs), v.id);
+            if (x != end(refs)) {
+                refVars[distance(begin(refs), x)] = v;
             }
         }
     }   
@@ -154,8 +160,43 @@ int main() {
         cout << "{\"min\":" << v.pos
              << ",\"max\":" << v.pos
              << ",\"id\":\"" << v.id << "\"";
-        if (refVar.genotypes.length() > 0) {
-            cout << ",\"score\":" << ld(refVar.genotypes, v.genotypes);
+
+        double maxLD = 0;
+        int maxRef = -1;
+        for (int r = 0; r < refVars.size(); ++r) {
+            if (refVars[r].genotypes.length() > 0) {
+                double tld = ld(refVars[r].genotypes, v.genotypes);
+                cout << ",\"score" << (r+2) << "\":" << tld;
+                if (tld > maxLD) {
+                    maxLD = tld;
+                    maxRef = r;
+                }
+            }
+        }
+        if (color && maxRef >= 0) {
+            int r1, r2, g1, g2, b1, b2;
+
+            if (maxRef == 0) {
+                r1 = 255, g1 = 150, b1 = 150;
+                r2 = 255, g2 = 0, b2 = 0;
+            } else if (maxRef == 1) {
+                r1 = 150, g1 = 150, b1 = 255;
+                r2 = 0, g2 = 0, b2 = 255;
+            } else if (maxRef == 2) {
+                r1 = 150, g1 = 255, b1 = 150;
+                r2 = 0, g2 = 255, b2 = 0;
+            } else {
+                r1 = 80, g1 = 80, b1 = 80;
+                r2 = 200, g2 = 200, b2 = 200;
+            }
+
+            unsigned int rX = (unsigned int) ((maxLD * r2) + ((1.0 - maxLD) * r1));
+            unsigned int gX = (unsigned int) ((maxLD * g2) + ((1.0 - maxLD) * g1));
+            unsigned int bX = (unsigned int) ((maxLD * b2) + ((1.0 - maxLD) * b1));
+
+            stringstream colstr;
+            colstr << noshowbase << setfill('0') << hex << setw(2) << rX << setw(2) << gX << setw(2) << bX;
+            cout << ",\"color\": \"#" << colstr.str() << "\"";
         }
         cout << "}";
     }
