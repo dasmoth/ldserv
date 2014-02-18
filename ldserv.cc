@@ -141,9 +141,11 @@ int main() {
             v.genotypes = toks[3];
             vars.push_back(v);
 
-            auto x = find(begin(refs), end(refs), v.id);
-            if (x != end(refs)) {
-                refVars[distance(begin(refs), x)] = v;
+            for (int x = 0; x < refs.size(); ++x) {
+                if (refs[x] == v.id) {
+                    refVars[x] = v;
+                    break;
+                }
             }
         }
     }   
