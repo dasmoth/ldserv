@@ -64,8 +64,17 @@ double ld(const string& a, const string& b) {
     return r2;
 }
 
-int main() {
+string mixColor(int r1, int g1, int b1, int r2, int g2, int b2, double fraction) {
+    unsigned int rX = (unsigned int) ((fraction * r2) + ((1.0 - fraction) * r1));
+    unsigned int gX = (unsigned int) ((fraction * g2) + ((1.0 - fraction) * g1));
+    unsigned int bX = (unsigned int) ((fraction * b2) + ((1.0 - fraction) * b1));
 
+    stringstream colstr;
+    colstr << noshowbase << setfill('0') << hex << setw(2) << rX << setw(2) << gX << setw(2) << bX;
+    return colstr.str();
+}
+
+int main() {
     string query = getEnvStr("QUERY_STRING");
     string fileName = getEnvStr("GENOTYPE_FILE");
     if (fileName == "") {
@@ -179,26 +188,21 @@ int main() {
             int r1, r2, g1, g2, b1, b2;
 
             if (maxRef == 0) {
-                r1 = 255, g1 = 150, b1 = 150;
+                r1 = 255, g1 = 220, b1 = 220;
                 r2 = 255, g2 = 0, b2 = 0;
             } else if (maxRef == 1) {
-                r1 = 150, g1 = 150, b1 = 255;
+                r1 = 220, g1 = 220, b1 = 255;
                 r2 = 0, g2 = 0, b2 = 255;
             } else if (maxRef == 2) {
-                r1 = 150, g1 = 255, b1 = 150;
+                r1 = 220, g1 = 255, b1 = 220;
                 r2 = 0, g2 = 255, b2 = 0;
             } else {
                 r1 = 80, g1 = 80, b1 = 80;
                 r2 = 200, g2 = 200, b2 = 200;
             }
 
-            unsigned int rX = (unsigned int) ((maxLD * r2) + ((1.0 - maxLD) * r1));
-            unsigned int gX = (unsigned int) ((maxLD * g2) + ((1.0 - maxLD) * g1));
-            unsigned int bX = (unsigned int) ((maxLD * b2) + ((1.0 - maxLD) * b1));
-
-            stringstream colstr;
-            colstr << noshowbase << setfill('0') << hex << setw(2) << rX << setw(2) << gX << setw(2) << bX;
-            cout << ",\"color\": \"#" << colstr.str() << "\"";
+            string color = mixColor(r1, g1, b1, r2, g2, b2, maxLD);
+            cout << ",\"color\": \"#" << color << "\"";
         }
         cout << "}";
     }
