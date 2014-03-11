@@ -98,6 +98,22 @@ vector<string> paletteGreen {
     mixColor(255, 255, 255, 0, 255, 0, 1.0),
 };
 
+vector<string> paletteOrange {
+    "808080",
+    mixColor(255, 255, 255, 240, 180, 0, 0.25),
+    mixColor(255, 255, 255, 240, 180, 0, 0.5),
+    mixColor(255, 255, 255, 240, 180, 0, 0.75),
+    mixColor(255, 255, 255, 240, 180, 0, 1.0)
+};
+
+vector<string> palettePurple {
+    "808080",
+    mixColor(255, 255, 255, 180, 0, 230, 0.25),
+    mixColor(255, 255, 255, 180, 0, 230, 0.5),
+    mixColor(255, 255, 255, 180, 0, 230, 0.75),
+    mixColor(255, 255, 255, 180, 0, 230, 1.0)
+};
+
 int main() {
     string query = getEnvStr("QUERY_STRING");
     string fileName = getEnvStr("GENOTYPE_FILE");
@@ -209,14 +225,19 @@ int main() {
             }
         }
         if (color && maxRef >= 0) {
-            vector<string> &palette = paletteGreen;
-
+            vector<string> palette = paletteGreen;
 
             if (maxRef == 0) {
                 palette = paletteRed;
             } else if (maxRef == 1) {
                 palette = paletteBlue;
-            } 
+            } else if (maxRef == 2) {
+                palette = paletteOrange;
+            } else if (maxRef == 3) {
+                palette = palettePurple;
+            } else {
+                palette = paletteGreen;
+            }
 
             int paletteSize = palette.size();
             int colIndex = (int) (maxLD * paletteSize);
